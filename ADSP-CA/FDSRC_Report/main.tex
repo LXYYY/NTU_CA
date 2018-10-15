@@ -1,0 +1,62 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage{tabularx} % extra features for tabular environment
+\usepackage{amsmath}  % improve math presentation
+\usepackage{graphicx} % takes care of graphic including machinery
+\usepackage[margin=1in,letterpaper]{geometry} % decreases margins
+\usepackage{cite} % takes care of citations
+\usepackage[final]{hyperref} % adds hyper links inside the generated pdf file
+\usepackage{leftidx}
+\hypersetup{
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=blue,        % color of internal links
+	citecolor=blue,        % color of links to bibliography
+	filecolor=magenta,     % color of file links
+	urlcolor=blue         
+}
+
+
+\begin{document}
+
+\title{Assignment Report of ADSP\\
+	 \large Comparison of SRC in the time domain and in the frequency domain}
+\author{Liu Xiangyu}
+\date{\today}
+\maketitle
+
+
+
+\section{Comparison of the Basic Principles}
+Sampling Rate Conversion by a ratio I/D in the time domain is achieved by firstly performing interpolation by the factor I and then decimating the output of the interpolator by factor D. The output sequence of the interpolator should be filtered by a low pass filter $h_{I}$ to reject the images. Meanwhile an anti-aliasing filter $h_{D}$ should be deployed before the decimator to prevent distortion from spectrum overlapping. Because both filters  $h_{I}$ and  $h_{D}$ are operated at the same sampling rate (=I$F_{x}$) and can be combined into a single low pass filter, which is operated at the place that has the highest sampling rate in the system. 
+
+In the frequency domain, according to the spectrum equations, the spectrum Y($\omega_{y}$) of the desired y(m) can be obtained by scaling the magnitude of the spectrum X($\omega_{x}$) and the frequency in the horizontal direction with constant factors.Therefore to realise sampling rate conversion in the frequency domain, the first process is to the calculate the N-point DFT X(k) of the input sequence x(n). Then a spectrum manipulator should be employed to scale X(k) in both axes to obtain the desired spectrum of $N_{1}$-point DFT \^{Y}(k) of the output sequence \^{y}(m) where $N_{1}$ = IN/D. The desired time-domain sequence \^{y}(m) is then obtained by preforming an inverse-DFT on \^{Y}(k).
+
+These two SRC processes in the time domain and in the frequency domain are different in many ways, but the root cause is the basic process of TD-SRC is to manipulate the input sequence directly in the time domain by interpolation and decimation, while the FD-SRC process is to manipulate the spectrum of the input sequence in frequency domain. All other processing units are different because they exist to incorporate the different basic processes to improve their accuracy and performance or reduce computational complexities, such as the combined lowpass filter in the time domain to reject images and aliasing, and the inverse-DFT transformer to retrieve the output time-domain sequence. 
+
+\section{Discussion of the Sources of the Distortions}
+
+The distortions in time-domain SRC may have the following sources:
+\begin{enumerate}
+\item The image-rejecting lowpass filter following the up-sampler. The up-sampler requires to be followed by an cooperative lowpass filter to reject residual images and meanwhile remain the desired spectrum. An ideal lowpass filter with perfect impulse response spectrum will reject images without cutting off the high-frequency components. However a practical lowpass filter will cause distortions by distorting the spectrum of the input signal or remaining some parts of images more or less because of the non-ideal impulse response. 
+\item The anti-aliasing lowpass filter before the down-sampler. The down-sampler requires an anti-aliasing lowpass filter deployed before it to remove spectrum overlapping of the input signal. But this anti-aliasing filter will cause distortion simultaneously if it is required to work, because the anti-aliasing process is actually to remove the high frequency components. And similarly to 1., the distortions may also come from the non-ideal impulse response of a practical lowpass filter.
+\item Since the combined filter in a integrated SRC system incorporates the filtering operations for both image-rejecting and anti-aliasing filters, it could simultaneously cause both types of distortions.
+\end{enumerate}
+
+SRC in the frequency domain has the possibilities to cause distortions for the following reasons:
+\begin{enumerate}
+\item The decimation and interpolation in the process of spectrum manipulation. 
+In the spectrum manipulation process: (1) in the case of sampling rate decreasing, where D $>$ I, the original spectrum needs to be compressed horizontally, causing aliasing. To get the desired output spectrum, the aliasing part need to be removed and decimate a value in the median frequency where k = $N_{1}$/2. Similarly to the case of the anti-aliasing filter in the time domain process, there exist distortions by losing high frequency components, where ($N_{1}$/2) $\leq$ k $\leq$ (N/2)-1 and (N/2)+1 $\leq$ k $\leq$ N-($N_{1}$/2); (2) in the case of sampling rate increasing, where I $>$ D, the original spectrum needs to be stretched horizontally, causing vacancy in the middle region of the spectrum between D$\pi$/I and 2$\pi$- D$\pi$/I. A specific value is selected to pad the vacancy, and this manually selected value will cause distortions since it's not a original component of the spectrum. Obviously different selection of the padding value will bring different errors.
+\item Inaccuracy of the overlap approach.
+Due to the limitation of the maximum DFT length for practical applications, long input sequences need to be divided into many shorter segments, which are to be processed individually, and then combined to form the required output. This method is known as the overlap approach for long sequences. Due to the existence of the difference between the spectrums of the extracted segment and the fragment of the original spectrum, there exist distortions between the estimated output segment of the overlap approach and the original segment. To minimise the distortions, the overlapping length should be sufficiently large, but meanwhile increasing the computational complexities, and decreasing the computational efficiency of the overlap approach.
+\item The inherent errors of the DFT and IDFT converters. 
+N-point DFT/IDFT or FFT/IFFT respectively in practical application themselves are approximation processes with sampling operations, which have a resolution of $F_{x}$/N in Hz. Therefore SRC in the frequency domain has inherent distortions because it employs DFT and IDFT converters.Again, similarly to 2., a larger N selected to minimise the distortions, increases computational complexities.
+\end{enumerate}
+
+\section{Comparison of the Required Computational Complexities}
+
+The major source of the required computational complexities of SRC is the combined lowpass  FIR filters in the time domain and the FFT/IFFT converters in the frequency domain.
+
+In the time domain, based on the Kaiser's formula, FIR filter order can be calculated, which equals to the number of required multiplications of per output sample. Then, the computational complexities can be optimised by applying polyphase and symmetry structure depending on the different I and D values, and the symmetry of the filter.
+
+In the frequency domain, according to the butterfly computation structure of FFT, an N-point DFT transformation has (N/2)$log_{2}N$ butterflies, and each of them requires two complex additions and one complex multiplication. So in total, an N-point DFT needs N$log_{2}N$ complex additions and (N/2)$log_{2}N$ complex multiplications. By using the same formula, the number of required multiplications of IFFT is ($N_{1}$/2)$log_{2}$$N_{1}$, where $N_{1}$ = IN/D. Meanwhile with the length of overlap increasing, the computational complexities increases proportionally by N/(N-2L). Therefore, an N-point frequency-domain SRC with a overlap length of L requires approximately ((N/2)$log_{2}N$+($N_{1}$/2)$log_{2}$$N_{1}$)*(N/(N-2L))/$N_{1}$ multiplications per output data sample.
+
+\end{document}
