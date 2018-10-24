@@ -7,10 +7,12 @@ Rahul Tallamraju, Sujit Rajappa, Michael Black, Kamalakar Karlapalem, and Aamir
   tracking scenarios.
 \newblock {\em arXiv preprint arXiv:1805.09633}, 2018.
 
-\bibitem{fukushima2013model}
-Hiroaki Fukushima, Kazuyuki Kon, and Fumitoshi Matsuno.
-\newblock Model predictive formation control using branch-and-bound compatible
-  with collision avoidance problems.
-\newblock {\em IEEE Transactions on Robotics}, 29(5):1308--1317, 2013.
+\bibitem{secchi2013bilateral}
+Cristian Secchi, Antonio Franchi, Heinrich~H B{\"u}lthoff, and Paolo~Robuffo
+  Giordano.
+\newblock Bilateral control of the degree of connectivity in multiple
+  mobile-robot teleoperation.
+\newblock In {\em Robotics and Automation (ICRA), 2013 IEEE International
+  Conference on}, pages 3645--3652. IEEE, 2013.
 
 \end{thebibliography}

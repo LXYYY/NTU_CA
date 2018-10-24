@@ -16,6 +16,10 @@
 \usepackage{amsfonts}
 \usepackage{enumerate}
 \usepackage{paralist}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{verbatim}
 
 \begin{document}
 
@@ -30,34 +34,47 @@ This assignment report is based on my understanding of the decentralized MPC bas
 
 Single agent obstacle avoidance, motion planning and control is already well studied. However, the multi-agent obstacle avoidance brings new challenges including motion planning dependencies between agents, and the poor computational scalability associated with the non-linear nature of these dependencies. Due to the above challenges, most multi-robot obstacle avoidance solutions faces several major problems, among which, this report focuses on: (i) non-convex constraints in optimization process, (ii) field local minima problem in local motion planning, since these two problems are highly related to the MPC process.
 
- This proposed solution can be described as a decentralized, convex, local optimization algorithm with the non-convexity problem and the field local minima problem solved in the following strategies:
+ This proposed solution can be described as a decentralized, convex, local optimization algorithm with the non-convexity problem and the field local minima problem solved by the following strategies:
 
 \begin{itemize}
-\item Handling non-convex constraints as pre-computed input forces in robot dynamics, to enforce convexity, which will be further discussed in section 3.3.
-\item Presenting 3 methodologies for potential field local minima avoidance, which will be detailed in section 3.4.
+\item Handling non-convex constraints as pre-computed input forces in robot dynamics, to enforce convexity, which will be further discussed in section \ref{sec:nonconvex}.
+\item Presenting 3 methodologies for potential field local minima avoidance, which will be detailed in section \ref{sec:fieldlocalminima}.
 \end{itemize}
 
-The framework and the main algorithm (decentralized quadratic model predictive control, DQMPC) used in MPC module will be discussed in section 3.1 and 3.2 respectively. This proposed approach also has many more advantages like computational scalability, which will not be discussed here since they are not the major problems focused on by this report.
+The framework and the main algorithm (decentralized quadratic model predictive control, DQMPC) used in the MPC module will be discussed in section \ref{sec:framework} and \ref{sec:DQMPC} respectively. This proposed approach also has many more advantages like computational scalability, which will not be discussed here since they are not the major problems focused on by this report.
 
+\begin{comment}
 \section{Related Work}
 In general, motion planner with obstacle avoidance for multi-agents can be classified into, (i) reactive and, (ii) optimization based approaches. Most reactive approaches are based on velocity obstacle (VO), whereas, optimization based approaches avoid obstacles by embedding collision constraints (like VO) within cost function or as hard constraints in optimization. Recently a mixed integer quadratic program (MIQP) based on centralized non-linear model predictive control (NMPC) \cite{fukushima2013model} has been proposed, where a variant of the branch and bound algorithm is used to realize feedback linearization. However this approach suffers with agent scale-up, since increase in binary variables of MIQP results in exponential complexity. 
+\end{comment}
 
 \section{Proposed Approach}
 \subsection{The Framework}
-The proposed framework is described here. For the concepts presented, we consider Micro Aerial Vehicles (MAVs) that hover at a pre-specified height $h_{gnd}$ and 2D target destination surface. However, in fact the proposed approach can be extended to any 3D surface. Let there be \emph{K} MAVs \emph{R1,...,$R_{K}$} tracking a target $x_{t}^{P}$, typically a person \emph{P}. Each MAC computes a desired destination position $\check{x}_{t}^{R_{k}}$ in the vicinity of the target position. The pose of $k^{th}$ MAV in the world frame at time \emph{t} is given by $\xi_{t}^{R_{k}} = [(x_{t}^{R_{k}})^{T} (\Theta_{t}^{R_{k}})^{T}] \in \mathbb{R}^{6}$. And let there be \emph{M} obstacles include $R_{k}$'s neighbouring MAVs and other obstacles in the environment.
+\label{sec:framework}
+The proposed framework is described here. For the concepts presented, the original paper considers Micro Aerial Vehicles (MAVs) that hover at a pre-specified height $h_{gnd}$ and 2D target destination surface. However, in fact the proposed approach can be extended to any 3D surface. Let there be \emph{K} MAVs $R_{1},...,R_{K}$ tracking a target $x_{t}^{P}$, typically a person \emph{P}. Each MAV computes a desired destination position $\check{x}_{t}^{R_{k}}$ in the vicinity of the target position. The pose of $k^{th}$ MAV in the world frame at time \emph{t} is given by $\xi_{t}^{R_{k}} = [(x_{t}^{R_{k}})^{T} (\Theta_{t}^{R_{k}})^{T}] \in \mathbb{R}^{6}$. And let there be \emph{M} obstacles include $R_{k}$'s neighbouring MAVs and other obstacles in the environment.
 
-The key requirements in a multi-robot target tracking scenario are, (i) to not lose track of the moving target, and (ii) to ensure that the robots avoid other robot agents and all obstacles (static or dynamic) in their vicinity. In order to address both these objectives in an integrated approach, a formation control (FC) algorithm is formulated with four main modules: (i) destination point computation depending on target movement, (ii) obstacle avoidance force generation, (iii) decentralized quadratic model predictive control (DQMPC) based planner for way point generation, and (iv) a low-level position controller, as detailed as following:
+The key requirements in a multi-robot target tracking scenario are, (i) to not lose track of the moving target, and (ii) to ensure that the robots avoid other robot agents and all obstacles (static or dynamic) in their vicinity. In order to address both these objectives in an integrated approach, a formation control (FC) algorithm is formulated with four main modules: (i) destination point computation depending on target movement, (ii) obstacle avoidance force generation, (iii) decentralized quadratic model predictive control (DQMPC) based planner for way point generation, and (iv) a low-level position controller. The proposed algorithm is detailed as following Algorithm \ref{algo:framework}:
 
-
-\begin{asparaenum}[step 1:]
-\item $\{\check{x}_{t}^{R_{k}}\} \leftarrow$ Compute Destination Position $\{\psi_{t}^{R_{k}},{x}_{t}^{R_{k}},{d}^{R_{k}},g_{gnd}\}$
-\item $[{f}_{t}^{R_{k}}(0),...,{f}_{t}^{R_{k}}(N)] \leftarrow$ Obstacle Force $\{{x}_{t}^{R_{k}},{x}_{t}^{O_{j}}(1:\emph{N}+1),\forall{j}\}$
-\item $\{{x}_{t}^{R_{k}*},{\dot{x}}_{t}^{R_{k}*},\nabla J_{DQMPC}\} \leftarrow$ DQMPC $\{{\check{x}}_{t}^{R_{k}},{x}_{t}^{R_{k}},{f}_{t}^{R_{k}}(0:N),g\}$
-\item $\{{\psi}_{t+1}^{R_{k}}\} \leftarrow$ Compute Desired Yaw $\{{x}_{t}^{R_{k}},\l{\nabla J_{DQMPC}}\}$
-\item Transmit ${x}_{t}^{R_{k}*}(N+1), {\dot{x}}_{t}^{R_{k}*}(N+1),{\psi}_{t+1}^{R_{k}}$ to Low-level Controller
-\end{asparaenum}
+\begin{algorithm}
+\caption{MPC-based formation controller and obstacle
+avoidance by MAV $R_{k}$ with inputs $\{x_{t}^{P}, x_{O_{j}} ; j = 1 : M\}$}
+\label{algo:framework}
+\begin{algorithmic}[1]
+\STATE $\{\check{x}_{t}^{R_{k}}\} \leftarrow$ Compute Destination Position $\{\psi_{t}^{R_{k}},{x}_{t}^{R_{k}},{d}^{R_{k}},g_{gnd}\}$
+\label{code:step1}
+\STATE $[{f}_{t}^{R_{k}}(0),...,{f}_{t}^{R_{k}}(N)] \leftarrow$ Obstacle Force $\{{x}_{t}^{R_{k}},{x}_{t}^{O_{j}}(1:N+1),\forall{j}\}$
+\label{code:step2}
+\STATE $\{{x}_{t}^{R_{k}*},{\dot{x}}_{t}^{R_{k}*},\nabla J_{DQMPC}\} \leftarrow$ DQMPC $\{{\check{x}}_{t}^{R_{k}},{x}_{t}^{R_{k}},{f}_{t}^{R_{k}}(0:N),g\}$
+\label{code:step3}
+\STATE $\{{\psi}_{t+1}^{R_{k}}\} \leftarrow$ Compute Desired Yaw $\{{x}_{t}^{R_{k}},\lVert {\nabla J_{DQMPC}}\rVert \}$
+\label{code:step4}
+\STATE Transmit ${x}_{t}^{R_{k}*}(N+1), {\dot{x}}_{t}^{R_{k}*}(N+1),{\psi}_{t+1}^{R_{k}}$ to Low-level Controller
+\label{code:step5}
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{DQMPC based Formation Planning and Control}
+\label{sec:DQMPC}
 The goal of the formation control algorithm running on each MAV $R_{k}$ is to
 \begin{asparaenum}[1)]
 \item Hover at a pre-specified height $h_{gnd}$.
@@ -70,7 +87,7 @@ Additionally, MAVs must adhere to the following constraints,
 \item To ensure that MAVs respect the specified state limits.
 \item To ensure that control inputs to MAVs are within the pre-specified saturation bounds.
 \end{asparaenum}
-The innovation of the proposed DQMPC process is reflected in step 2 and 3. The chosen optimization objective for motion planning task with target tracking and obstacle avoidance is, 
+The innovation of the proposed DQMPC process is reflected in step \ref{code:step2} and \ref{code:step3}. The chosen optimization objective for motion planning task with target tracking and obstacle avoidance is, 
 \begin{equation}
 J_{DQMPC}=\sum_{n=0}^{N}(\Omega_{i}(u_{t}^{R_{k}}(n)+f_{t}^{R_{k}}(n)+g)^{2})+\Omega_{t}([({x}_{t}^{R_{k}})^{T}\ (\dot{x}_{t}^{R_{k}})^{T}]-[(\check{x}_{t}^{R_{k}})^{T}\ 0^{T}])^{2}
 \end{equation}
@@ -85,10 +102,12 @@ The expression of the optimization objective of DQMPC indicates that there are t
 So far, the optimization is defined by the following equations.
 \begin{equation}
 x(1)_{t}^{R_{k}*}...x(N+1)_{t}^{R_{k}*},u_{t}^{R_{k}*}(0)...u_{t}^{R_{k}*}(N) = \mathop{\arg\min}_{u_{t}^{R_{k}}(0)...u_{t}^{R_{k}}(N)}(J_{DQMPC})
+\label{eq:opm}
 \end{equation}
 subject to,
 \begin{equation}
 [{x}_{t}^{R_{k}}(n+1)^{T}\ \dot{x}_{t}^{R_{k}}(n+1)^{T}]^{T}=A[{x}_{t}^{R_{k}}(n)^{T}\ \dot{x}_{t}^{R_{k}}(n)^{T}]^{T}+B(u_{t}^{R_{k}}(n)+f_{t}^{R_{k}}(n)+g),
+\label{eq:steady-state}
 \end{equation}
 \begin{equation}
 u_{min}\leq u_{t}^{R_{k}}(n)\leq u_{max},
@@ -104,9 +123,69 @@ where (4) is the discrete-time state-space evolution of the robot.
 Here, we still have the field local minima problem unsolved. So we need to do further manipulation on the DQMPC formulation. The original paper presents 3 methods to avoid field local minima, section 3.4 of this report mainly discusses the one with the best performance.
 
 \subsection{Handling Non-Convex Collision Avoidance Constraints}
+\label{sec:nonconvex}
+At any given point there are two forces acting on each robot, namely 
+\begin{inparaenum}[(i)]
+\item the attractive force due to the optimization objective (eq.(3)), and
+\item the repulsive force due to the potential field around obstacles ($f_{t}^{R_{k}}(n)$). 
+\end{inparaenum}
+In general, a repulsive force can be modeled as a force vector based on the distance to obstacles. Here, the potential field force variation is considered as a hyperbolic function ($F_{hyp}^{R_{k},O_{j}}(d(n))$) of distance between MAV $R_{k}$ and obstacle $O_{j}$.
+The formulation proposed in \cite{secchi2013bilateral} employed in this approach to model $F_{hyp}^{R_{k},O_{j}}(d(n))$, where $d(n)=\lVert x_{t-1}^{R_{k}}(n)-x_{t}^{O_{j}}(n) \rVert_{2}, \forall n \in [0,...,N]$ is the distance between the MAV's predicted horizon positions from the previous time step $(t-1)$ and the obstacles (which includes shared horizon predictions of other MAVs).
+
+According to \cite{secchi2013bilateral}, in general, a connectivity potential function, which in this case is potential field forces, is defined as a smooth non-negative function of $d$, $F^{d}:(d_{min},\inf)\rightarrow \mathbb{R}^{+}$, that grows unbounded as $d\rightarrow d_{min}>0$ and vanishes (with vanishing derivative) for $d=d_{min}+\Delta,\Delta>0$. An example of a possible $F_{hyp}^{R_{k},O_{j}}(d(n))$ can be obtained by joining a hyperbolic function to 0 using a smooth bump function.
+
+Therefore, the repulsive force vector is indicated by the following expression,
+\begin{equation}
+F_{rep}^{R_{k},O_{j}}(n)=
+\left\{
+\begin{array}{lr}
+F_{hyp}^{R_{k},O_{j}}(d(n))\alpha, & if\ d(n)<d_{safe}\\
+0, & if\ d(n)>d_{safe}
+\end{array}
+\right.
+,
+\end{equation}
+where $d_{safe}$ is the distance from the obstacle where the potential field magnitude is non-zero. $\alpha=\frac{x_{t}^{O_{j}}(n)-x_{t-1}^{R_{k}}(n)}{\lVert x_{t}^{O_{j}}(n)-x_{t-1}^{R_{k}}(n) \rVert_{2}}$ is the unit vector in the direction away from the obstacle. Additionally we consider a distance $d_{min}\ll d_{safe}$ around the obstacle, where the potential field magnitude tends to infinity.The potential force acting on an agent per horizon step $n$ is,
+\begin{equation}
+f_{t}^{R_{k}}(n)=\sum_{\forall j}F_{rep}^{R_{k},O_{j}}(n), 
+\end{equation}
+which is added into the system dynamics in eq.(\ref{eq:steady-state}).
 
 \subsection{Resolving the Field Local Minima Problem}
+\label{sec:fieldlocalminima}
+The field local minima issue is another key challenge in potential field based approaches. In general, a field local minima problem occurs when the summation of attractive and repulsive forces acting on the robot is a zero vector. Equivalently, a control deadlock could also arise when the robot is constantly pushed in the exact opposite direction. Both local minima and control deadlock are undesirable scenarios. From eq.(\ref{eq:steady-state}) and Algorithm \ref{algo:framework}, it is clear that the optimization can characterize control inputs that will not lead to collisions, but, cannot characterize those control inputs that lead to these scenarios. In such cases the gradient of opti- mization would be non-zero indicating that the robot knows its direction of motion towards the target, but cannot reach the destination surface because the potenial field functions are not directly used in DQMPC constraints.
 
+The original paper presents 3 possible solutions to the field local minima problem: 
+\begin{inparaenum}[(i)]
+\item Swivelling Robot Destination (SRD) method,
+\item Approach Angle Towards Target Method, and
+\item Tangential Band Method. \label{enum:tan}
+\end{inparaenum}
+Here I discuss (\ref{enum:tan}) which has the best field local minima avoidance performance. 
+In method (\ref{enum:tan}), a tangential band is constructed around each obstacle where an instantaneous (at $n=0$) tangential force acts about the obstacle center. The width of the band is $>(\dot{x}_{max}^{T}\Delta{t}+u_{max}\frac{\Delta{t}^{2}}{2})$, so that the robot cannot exit this band unless it has overcome the static obstacles. Briefly, this tangential band method works in the following way: 
+\begin{inparaenum}[1)]
+\item Inside the band, there exist both tangential and repulsive force effects on $R_{k}$. And meanwhile when a robot enter the band, the diagonal weights of $\Omega_{t}$ are reduced to very low values, to ensure the tangential force is higher, giving the robot an acceleration component to avoid field local minima and deadlock issues, while the robot is being pushed away.
+\item Outside the band, there exists only tangential effect. And the high weights of $\Omega_{t}$ is restored to ensure the robot converges to its desired destination.
+\end{inparaenum}
+
+The tangential force, the new $\Omega_{t}$ and the new potential force are formulated as following expressions,
+
+\begin{equation}
+F_{tan}^{R_{k},O_{j}}(0)=k_{tan}\nabla{J_{DQMPC}^{R_{k}}}\ \hat{\alpha}, 
+\label{eq:ftang}
+\end{equation}
+
+\begin{equation}
+\Omega_{t}=\Omega_{t,min}, if\ x_{t}^{R_{k}}\leq d(0)+d_{band},
+\label{eq:newomega}
+\end{equation}
+
+\begin{equation}
+f_{t}^{R_{k}}(n)=\sum_{\forall{J}}F_{rep}^{R_{k},O_{j}}(n)+F_{tan}^{R_{k},O_{j}}(0),
+\label{eq:newfrep}
+\end{equation}
+
+where $k_{tan}$ is user-defined gain and $\hat{\alpha}$ is defined orthogonal to $\alpha$. By substituting eq.(\ref{eq:ftang}), (\ref{eq:newomega}), ( \ref{eq:newfrep}) into eq.(\ref{eq:opm}) and (\ref{eq:steady-state}), the optimization process obtains the functionality to guarantee collision avoidance with field local minima avoidance, and facilitate robot convergence to the target surface.
 
 \bibliographystyle{unsrt}
 \bibliography{Untitled.bib}

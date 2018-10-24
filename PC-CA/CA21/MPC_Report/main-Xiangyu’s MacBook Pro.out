@@ -1,0 +1,7 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Related Work}{}% 2
+\BOOKMARK [1][-]{section.3}{Proposed Approach}{}% 3
+\BOOKMARK [2][-]{subsection.3.1}{The Framework}{section.3}% 4
+\BOOKMARK [2][-]{subsection.3.2}{DQMPC based Formation Planning and Control}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.3}{Handling Non-Convex Collision Avoidance Constraints}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.4}{Resolving the Field Local Minima Problem}{section.3}% 7
