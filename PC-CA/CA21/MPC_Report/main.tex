@@ -1,0 +1,55 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage{tabularx} % extra features for tabular environment
+\usepackage{amsmath}  % improve math presentation
+\usepackage{graphicx} % takes care of graphic including machinery
+\usepackage[margin=1in,letterpaper]{geometry} % decreases margins
+\usepackage{cite} % takes care of citations
+\usepackage[final]{hyperref} % adds hyper links inside the generated pdf file
+\usepackage{leftidx}
+\hypersetup{
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=blue,        % color of internal links
+	citecolor=blue,        % color of links to bibliography
+	filecolor=magenta,     % color of file links
+	urlcolor=blue
+}
+\usepackage{amsfonts}
+
+\begin{document}
+
+\title{Assignment Report of MPC\\
+	 \large Decentralized MPC based Obstacle Avoidance for Multi-agents}
+\author{Liu Xiangyu G1802061L}
+\date{\today}
+\maketitle
+
+\section{Introduction}
+This assignment report is based on my understanding of the decentralized MPC based obstacle avoidance approach proposed in \cite{tallamraju2018decentralized}, which is also related to my dissertation project focusing on MRSLAM. This work provides a holistic solution to the problem of obstacle avoidance, in the context of multi robot target tracking in an environment with static and dynamic obstacles.
+
+Single agent obstacle avoidance, motion planning and control is already well studied. However, the multi-agent obstacle avoidance brings new challenges including motion planning dependencies between agents, and the poor computational scalability associated with the non-linear nature of these dependencies. Due to the above challenges, most multi-robot obstacle avoidance solutions faces two major problems: (i) non-convex constraints in optimization process, (ii) field local minima problem in local motion planning. This proposed solution can be described as a decentralized, convex, local optimization algorithm with the non-convexity problem and the field local minima problem solved in the following strategies:
+
+\begin{itemize}
+\item Handling non-convex constraints as pre-computed input forces in robot dynamics, to enforce convexity, which will be further discussed in section 3.3.
+\item Presenting 3 methodologies for potential field local minima avoidance, which will be detailed in section 3.4.
+\end{itemize}
+
+The preliminaries and the main algorithm (decentralized quadratic model predictive control, DQMPC) used in MPC module will be discussed in section 3.1 and 3.2 respectively. This proposed approach still has many more advantages including computational scalability, which will not be discussed since they are not the major problems focused on by this report.
+
+\section{Related Work}
+In general, motion planner with obstacle avoidance for multi-agents can be classified into, (i) reactive and, (ii) optimization based approaches. Most reactive approaches are based on velocity obstacle (VO), whereas, optimization based approaches avoid obstacles by embedding collision constraints (like VO) within cost function or as hard constraints in optimization. Recently a mixed integer quadratic program (MIQP) based on centralized non-linear model predictive control (NMPC) \cite{fukushima2013model} has been proposed, where a variant of the branch and bound algorithm is used to realize feedback linearization. However this approach suffers with agent scale-up, since increase in binary variables of MIQP results in exponential complexity. 
+
+\section{Proposed Approach}
+\subsection{Preliminaries}
+The proposed framework is described here. For the concepts presented, we consider Micro Aerial Vehicles (MAVs) that hover at a pre-specified height $h_{gnd}$ and 2D target destination surface. However, in fact the proposed approach can be extended to any 3D surface. Let there be \emph{K} MAVs \emph{R1,...,$R_{K}$} tracking a target $x_{t}^{P}$, typically a person \emph{P}. Each MAC computes a desired destination position $\check{x}_{t}^{R_{k}}$ in the vicinity of the target position. The pose of $k^{th}$ MAV in the world frame at time \emph{t} is given by $\xi_{t}^{R_{k}} = [(x_{t}^{R_{k}})^{T} (\Theta_{t}^{R_{k}})^{T}] \in \mathbb{R}^{6}$. And let there be \emph{M} obstacles include $R_{k}$'s neighbouring MAVs and other obstacles in the environment.
+
+The key requirements in a multi-robot target tracking scenario are, (i) to not lose track of the moving target, and (ii) to ensure that the robots avoid other robot agents and all obstacles (static or dynamic) in their vicinity. 
+\subsection{DQMPC based Formation Planning and Control}
+\subsection{Handling Non-Convex Collision Avoidance Constraints}
+
+\subsection{Resolving the Field Local Minima Problem}
+
+
+\bibliographystyle{unsrt}
+\bibliography{Untitled.bib}
+
+\end{document}

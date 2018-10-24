@@ -1,0 +1,16 @@
+\begin{thebibliography}{1}
+
+\bibitem{tallamraju2018decentralized}
+Rahul Tallamraju, Sujit Rajappa, Michael Black, Kamalakar Karlapalem, and Aamir
+  Ahmad.
+\newblock Decentralized mpc based obstacle avoidance for multi-robot target
+  tracking scenarios.
+\newblock {\em arXiv preprint arXiv:1805.09633}, 2018.
+
+\bibitem{fukushima2013model}
+Hiroaki Fukushima, Kazuyuki Kon, and Fumitoshi Matsuno.
+\newblock Model predictive formation control using branch-and-bound compatible
+  with collision avoidance problems.
+\newblock {\em IEEE Transactions on Robotics}, 29(5):1308--1317, 2013.
+
+\end{thebibliography}
