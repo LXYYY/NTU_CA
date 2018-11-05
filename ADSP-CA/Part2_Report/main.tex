@@ -19,6 +19,10 @@
 \DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
 \newcommand{\z}{\mathpzc{z}}
 \usepackage{amsmath,bm}
+\usepackage{schemabloc}
+
+\usetikzlibrary{circuits}
+\usepackage{verbatim}
 
 \begin{document}
 
@@ -132,78 +136,46 @@ Q2.a)
 A linear adaptive filtering algorithm involves two basic processes: 
 \begin{inparaenum}[(1)]
 	\item a filtering process designed to produce an output in response to a sequence of input data, and
-	\item an adaptive process, the purpose of which is to provide a mechanism for the adaptive control of an adjustable set of parameters used in the filtering process
+	\item an adaptive process, the purpose of which is to provide a mechanism for the adaptive control of an adjustable set of parameters used in the filtering process.
 \end{inparaenum}
 
 \noindent
 b)
-
+The implementation of the adaptive noise canceller is demonstrated in fq.(\ref{fg:anc}).
+\begin{figure}
 \begin{center}
 
-\begin{tikzpicture}[>=stealth,->,shorten >=2pt,looseness=.5,auto]
+\begin{tikzpicture}
+	\sbEntree{E}
+	\sbComp[17]{a}{E}
+		 \sbRelier{E}{a}
+	\sbSortie[5]{S1}{a}
+		\sbRelier{a}{S1}
+		\sbNomLien[0.8]{S1}{Output}
+    \sbDecaleNoeudy{a}{v}
 
-	% Place nodes using a matrix
-	\matrix[row sep=2.5mm, column sep=5mm]
-	{
-		%--------------------------------------------------------------------
-		\node[dspnodeopen,dsp/label=above] (m00) {$y(n)$};    &&&&
+    \sbDecaleNoeudy[10]{a}{f}
 
-
-		\node[dspadder]                  (m08) {};          &
-		\node[dspnodefull]                  (m0X) {};          &
-		\node[coordinate, dsp/label=above]  (out) {$Output$};         \\
-		%--------------------------------------------------------------------
-		\\
-		%--------------------------------------------------------------------
-		\\
-		%--------------------------------------------------------------------
-		\node[dspnodeopen,dsp/label=above] (m20) {$v(n)$};    &&
+    \sbBlocr{r2}{Adaptive FIR Filter}{v}
+    \sbBlocr{r3}{Adaptive Algorithm}{f}
+	\sbRelierxy{r2}{a}
+	\sbRelieryx{a-S1}{r3}
+	\sbRelier{r3}{r2}
 	
-		\node[dspsquare,right=of m20,minimum size=2cm,text height=3em]                    (AF) { Adaptive\\FIR\\filter};          &&
-		\node[coordinate] (c20) {};    
-		   \\
-		%--------------------------------------------------------------------
-		
-		          &
-		          
-   \node[coordinate] (c31) {};  && 
-		\node[dspsquare,right=of m20,minimum size=1.3cm,text height=2em]                    (AA) { Adaptive\\Algorithm};         &&
-		\node[coordinate] (c30) {};    \\
-	};
-
-     \draw[->](m00)--(m08);     
-     \draw[->](m08)--(out)node[above]{Output};     
-     \draw[->](m0X)--(c30)--(AA);     
-     \draw[->](AF)--(c20)--(m08);     
-     \draw[->](AA)--(c31)--(AF);     
-
-	% Draw connections
-	
-%	\begin{scope}[start chain]
-%		\chainin (m00);
-%		\chainin (m08) [join=by dspconn] ;
-%		\chainin (m0X) [join=by dspline] ;
-%		\chainin (out) [join=by dspconn] ;
-%
-%	\end{scope}
-
-%	\foreach \i [evaluate = \i as \j using int(\i+1),
-%	             evaluate = \i as \k using int(\i+2),] in {2,4,6}
-%	{
-%		\begin{scope}[start chain]
-%			\chainin (m0\i);
-%			\chainin (m0\j) [join=by dspconn];
-%			\chainin (m0\k) [join=by dspline];
-%			\chainin (m1\k) [join=by dspconn];
-%			\chainin (m2\k) [join=by dspconn];
-%		\end{scope}
-%		\draw[dspconn] (m2\i) -- (m2\k);
-%	}
-%
-%	\draw[dspflow] (m28) -- (m2X);
+        \sbDecaleNoeudy{E}{u}
+        	\sbRelier{u}{r2}
+        	
+ \sbNomLien[0.8]{E}{$y(n)$} 
+ \sbNomLien[0.8]{u}{$v(n)$}
 
 \end{tikzpicture}
+
 \end{center}
+\caption{Adaptive Noise Canceller}
+\label{fg:anc}
+
+\end{figure}
+
 The LMS algorithm is given by,
 \begin{equation}
 \begin{array}{lr}
@@ -212,14 +184,14 @@ The LMS algorithm is given by,
 \end{equation}
 where, 
 \begin{enumerate}
-	\item $\mathbf{h}_{M}(n)$ is the matrices of estimates of the true coefficients
-	\item $\mu$ is a fixed step size
-	\item $e(n)=d(n)-\hat{d}(n)$
+	\item $\mathbf{h}_{M}(n)$ is the matrices of estimates of the true coefficients,
+	\item $\mu$ is a fixed step size,
+	\item $e(n)=d(n)-\hat{d}(n)$,
 	\item $\bm{X}_{M}(n)$ is the set of M signal samples in the filter at the $n^{th}$ iteration.
 \end{enumerate}
 Therefore, the adaptive FIR filter to estimate the noise $\hat{w}_{2}(n)$ works as,
 \begin{equation}
-	\hat{w}_{2}(n)=\sum_{m=0}^{M}{h(m)v(n-m)}
+	\hat{w}_{2}(n)=\sum_{m=0}^{M}{h_{M}(m)v(n-m)}
 \end{equation}
 
 \noindent
