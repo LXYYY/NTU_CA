@@ -1,0 +1,296 @@
+\documentclass[12pt]{article}
+\usepackage{tabularx} % extra features for tabular environment
+\usepackage{amsmath}  % improve math presentation
+\usepackage{graphicx} % takes care of graphic including machinery
+\usepackage[margin=1in,letterpaper]{geometry} % decreases margins
+\usepackage{cite} % takes care of citations
+\usepackage[final]{hyperref} % adds hyper links inside the generated pdf file
+\usepackage{leftidx}
+\hypersetup{
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=blue,        % color of internal links
+	citecolor=blue,        % color of links to bibliography
+	filecolor=magenta,     % color of file links
+	urlcolor=blue         
+}
+\usepackage{paralist}
+\usepackage{tikz}
+\usetikzlibrary{dsp,chains}
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+\newcommand{\z}{\mathpzc{z}}
+\usepackage{amsmath,bm}
+
+\begin{document}
+
+\title{Assignment Report of ADSP Part 2\\
+	 }
+\author{Liu Xiangyu G1802061L}
+\date{\today}
+\maketitle
+
+\noindent
+Q1.a)
+Given,
+\begin{equation}
+	x[n]=s[n]+w[n]
+	\label{eq:xn}
+\end{equation}
+\begin{equation}
+	s[n]=0.8s[n-1]+v[n]
+	\label{eq:sn}
+\end{equation}
+from eq.(\ref{eq:sn}), the power spectral density of s[n],
+\begin{equation}
+	\label{eq:psdsn}
+	\begin{array}{lll}
+		\Gamma_{ss}(z)&=&\sigma_{v}^{2}H(z)H(z^{-1})\\
+		&=&\sigma_{v}^{2}\frac{1}{1-0.8z^{-1}}\frac{1}{1-0.8z}
+	\end{array}
+\end{equation}
+By taking the inverse Z-transform, the autocorrelation functions
+\begin{equation}
+\label{eq:rss}
+	\gamma_{ss}[k]=0.8^{|k|}
+\end{equation}
+\begin{equation}
+\label{eq:rxx}
+	\gamma_{xx}[k]=\gamma_{ss}[k]+\gamma_{ww}[k]=0.8^{|k|}+\delta[k]
+\end{equation}
+
+\noindent
+b)
+Solve the following normal equations:
+\begin{equation}
+	\left [
+	\begin{array}{cc}
+		\gamma_{xx}[0]&\gamma_{xx}[-1]\\
+		\gamma_{xx}[1]&\gamma_{xx}[0]
+	\end{array}
+	\right ]
+	\left[
+	\begin{array}{c}
+	h[0]\\
+	h[1]
+	\end{array}
+	\right ]
+	=\left[
+	\begin{array}{c}
+		\gamma_{ss}[0]\\
+		\gamma_{ss}[1]
+	\end{array}
+	\right]
+\end{equation}
+\begin{equation}
+	\left[
+	\begin{array}{cc}
+		2&0.8\\
+		0.8&2
+	\end{array}
+	\right]
+	\left[
+	\begin{array}{c}
+		h[0]\\
+		h[1]
+	\end{array}
+	\right]
+	=
+	\left[
+	\begin{array}{c}
+		1\\
+		0.8
+	\end{array}
+	\right]
+\end{equation}
+Therefore,
+\begin{equation}
+\label{eq:h}
+	h_{opt}[0]=0.405, h_{opt}[1]=0.238
+\end{equation}
+
+
+\noindent
+c)
+Hence,
+\begin{equation}
+	\varepsilon_{2}^{h}=\min\varepsilon_{2}^{h}=\gamma_{ss}[0]-
+	\left[
+	\begin{array}{cc}
+		\gamma_{ss}[0]&\gamma_{ss}[1]
+	\end{array}
+	\right]
+	\left[
+	\begin{array}
+		{c}
+		h[0]\\
+		h[1]
+	\end{array}
+	\right]=0.405
+\end{equation}
+
+\noindent
+Q2.a)
+A linear adaptive filtering algorithm involves two basic processes: 
+\begin{inparaenum}[(1)]
+	\item a filtering process designed to produce an output in response to a sequence of input data, and
+	\item an adaptive process, the purpose of which is to provide a mechanism for the adaptive control of an adjustable set of parameters used in the filtering process
+\end{inparaenum}
+
+\noindent
+b)
+
+\begin{center}
+
+\begin{tikzpicture}[>=stealth,->,shorten >=2pt,looseness=.5,auto]
+
+	% Place nodes using a matrix
+	\matrix[row sep=2.5mm, column sep=5mm]
+	{
+		%--------------------------------------------------------------------
+		\node[dspnodeopen,dsp/label=above] (m00) {$y(n)$};    &&&&
+
+
+		\node[dspadder]                  (m08) {};          &
+		\node[dspnodefull]                  (m0X) {};          &
+		\node[coordinate, dsp/label=above]  (out) {$Output$};         \\
+		%--------------------------------------------------------------------
+		\\
+		%--------------------------------------------------------------------
+		\\
+		%--------------------------------------------------------------------
+		\node[dspnodeopen,dsp/label=above] (m20) {$v(n)$};    &&
+	
+		\node[dspsquare,right=of m20,minimum size=2cm,text height=3em]                    (AF) { Adaptive\\FIR\\filter};          &&
+		\node[coordinate] (c20) {};    
+		   \\
+		%--------------------------------------------------------------------
+		
+		          &
+		          
+   \node[coordinate] (c31) {};  && 
+		\node[dspsquare,right=of m20,minimum size=1.3cm,text height=2em]                    (AA) { Adaptive\\Algorithm};         &&
+		\node[coordinate] (c30) {};    \\
+	};
+
+     \draw[->](m00)--(m08);     
+     \draw[->](m08)--(out)node[above]{Output};     
+     \draw[->](m0X)--(c30)--(AA);     
+     \draw[->](AF)--(c20)--(m08);     
+     \draw[->](AA)--(c31)--(AF);     
+
+	% Draw connections
+	
+%	\begin{scope}[start chain]
+%		\chainin (m00);
+%		\chainin (m08) [join=by dspconn] ;
+%		\chainin (m0X) [join=by dspline] ;
+%		\chainin (out) [join=by dspconn] ;
+%
+%	\end{scope}
+
+%	\foreach \i [evaluate = \i as \j using int(\i+1),
+%	             evaluate = \i as \k using int(\i+2),] in {2,4,6}
+%	{
+%		\begin{scope}[start chain]
+%			\chainin (m0\i);
+%			\chainin (m0\j) [join=by dspconn];
+%			\chainin (m0\k) [join=by dspline];
+%			\chainin (m1\k) [join=by dspconn];
+%			\chainin (m2\k) [join=by dspconn];
+%		\end{scope}
+%		\draw[dspconn] (m2\i) -- (m2\k);
+%	}
+%
+%	\draw[dspflow] (m28) -- (m2X);
+
+\end{tikzpicture}
+\end{center}
+The LMS algorithm is given by,
+\begin{equation}
+\begin{array}{lr}
+		\bm{h}_{M}(n+1)=\bm{h}_{M}(n)+\mu e(n)\bm{X}_{M}^{*}(n), & n=0,1,2,...
+\end{array}
+\end{equation}
+where, 
+\begin{enumerate}
+	\item $\mathbf{h}_{M}(n)$ is the matrices of estimates of the true coefficients
+	\item $\mu$ is a fixed step size
+	\item $e(n)=d(n)-\hat{d}(n)$
+	\item $\bm{X}_{M}(n)$ is the set of M signal samples in the filter at the $n^{th}$ iteration.
+\end{enumerate}
+Therefore, the adaptive FIR filter to estimate the noise $\hat{w}_{2}(n)$ works as,
+\begin{equation}
+	\hat{w}_{2}(n)=\sum_{m=0}^{M}{h(m)v(n-m)}
+\end{equation}
+
+\noindent
+c)
+The convergence of the mean of the coefficient vector in the LMS algorithm depends on the range of $\mu$,
+\begin{equation}
+	0<\mu<\frac{2}{\lambda_{max}}
+\end{equation}
+where $lambda_{max}$ is the largest eigenvalue of $\Gamma_{M}$,
+\begin{equation}
+	\lambda_{max}<\sum_{k=0}^{M-1}{\lambda_{k}}=trace\Gamma_{M}=M\gamma_{xx}[0]
+\end{equation}
+Given the input white noise signal has zero mean and variance $w^{2}$, 
+\begin{equation}
+	\lambda_{max}<M\gamma_{xx}[0]=M\sigma^{2}\delta[0]=M\sigma^{2}
+\end{equation}
+Therefore, the condition for convergence is when the selected fixed step size $\mu$ is less than the upper bound,
+\begin{equation}
+	\mu<\frac{2}{M\sigma^{2}}
+\end{equation}
+
+\noindent
+Q3.
+Given $x(n)=s(n)+w(n)$, 
+\begin{equation}
+	\gamma_{xx}[m]=\gamma_{ss}[m]+\gamma_{ww}[m]=\gamma_{ss}[m]+\sigma_{w}^{2}\delta[m]
+\end{equation}
+\begin{equation}
+	\Gamma_{xx}(z)=\Gamma_{ss}(z)+\Gamma_{ww}(z)=\frac{\sigma_{s}^{2}}{|A(z)|^{2}}+\sigma_{w}^{2}=\frac{\sigma_{s}^{2}+\sigma_{w}^{2}|A(z)|^{2}}{|A(z)|^{2}}
+\end{equation}
+%Let $\alpha^{2}={\sigma_{s}^{2}}{\sigma_{w}^{2}}$,
+%\begin{equation}
+%		\Gamma_{xx}(z=\sigma_{s}\frac{1+\alpha^{2}|A(z)|^{2}}{|A(z)|^{2}}
+%\end{equation}
+To model $x(n)$ as ARMA(2,2) process, the power density spectrum of $x(n)$ needs to have the formation:
+\begin{equation}
+	\hat{\Gamma}_{xx}(z)=\hat{\sigma}_{x}\frac{\hat{B}(z)\hat{B}(z^{-1})}{\hat{A}(z)\hat{A}(z^{-1})}
+\end{equation}
+where,
+\begin{equation}
+\begin{split}
+	\hat{A}(z)=a_{0}+a_{1}z^{-1}+a_{2}z^{-2}\\
+	\hat{B}(z)=b_{0}+b_{1}z^{-1}+b_{2}z^{-2}
+\end{split}
+\end{equation}
+In this case, since $s(n)$ is given as an AR(2) process, we only need to find $B(z)$ so that,
+\begin{equation}
+\label{eq:bbdesired}
+	B(z)B(z^{-1})=\sigma_{s}^{2}+\sigma_{w}^{2}|A(z)|^{2}
+\end{equation}
+Therefore, let 
+\begin{equation}
+\label{eq:hatbc}
+	B(z)=c+\sigma_{w}A(z)
+\end{equation}
+where $c$ is a constant to determine. If there exists a value of $c$ that makes $\hat{B}(z)\hat{B}(z^{-1})$ equal to $\sigma_{s}^{2}+\sigma_{w}^{2}|A(z)|^{2}$, x(n) can be modelled as an ARMA(2,2) process. 
+Based on eq.(\ref{eq:hatbc}), 
+\begin{equation}
+\label{eq:hatbext}
+\begin{split}
+		B(z)B(z^{-1})&=c^{2}+c\sigma_{w}(A(z)+A(z^{-1}))+\sigma_{w}^{2}|A(z)|^{2}\\
+		&=c^{2}+2c\sigma_{w}Re\{A(z)\}+\sigma_{w}^{2}|A(z)|^{2}
+\end{split}
+\end{equation}
+Considering eq.(\ref{eq:bbdesired}) equal to eq.(\ref{eq:hatbext}), the proper c can be obtained,
+\begin{equation}
+	\hat{c}=\sqrt{\sigma_{s}^{2}+\sigma_{w}^{2}Re^{2}\{A(z)\}}-\sigma_{w}Re\{A(z)\}
+\end{equation}
+With $c$ selected as above, the condition in eq.(\ref{eq:bbdesired}) is satisfied, and x(n) is an ARMA(2,2) process with A(z) given and B(z) as,
+\begin{equation}
+	B(z)=\hat{c}+\sigma_{w}A(z)
+\end{equation}
+
+\end{document}

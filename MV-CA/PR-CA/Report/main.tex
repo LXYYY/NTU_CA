@@ -1,0 +1,100 @@
+\documentclass[12pt]{article}
+\usepackage{tabularx} % extra features for tabular environment
+\usepackage{amsmath}  % improve math presentation
+\usepackage{graphicx} % takes care of graphic including machinery
+\usepackage[margin=1in,letterpaper]{geometry} % decreases margins
+\usepackage{cite} % takes care of citations
+\usepackage[final]{hyperref} % adds hyper links inside the generated pdf file
+\usepackage{leftidx}
+\hypersetup{
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=blue,        % color of internal links
+	citecolor=blue,        % color of links to bibliography
+	filecolor=magenta,     % color of file links
+	urlcolor=blue
+}
+\usepackage{amsfonts}
+\usepackage{enumerate}
+\usepackage{paralist}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{verbatim}
+
+\begin{document}
+
+\title{Assignment Report of Machine Vision\\
+	 \large Evaluation of RVFL Networks}
+\author{Liu Xiangyu G1802061L}
+\date{\today}
+\maketitle
+
+\section{Introduction}
+Following the requirements of the assignment, the influences of the following various issues on the performance of RVFL Networks are evaluated:
+\begin{enumerate}
+	\item With and without direct links from the input layer to the output layer.
+	\item With and without the bias in the output neuron.
+	\item Effect of scaling the random features before feeding them into the activation function.
+	\item Performances of radbas and hardlim activation functions.
+	\item Performance of Moore-Penrose pseudoinverse and ridge regression for the computation of the output weights.
+\end{enumerate}
+
+\section{Datasets}
+11 datasets are used in the evaluation, showed in Table \ref{table:datasets}.
+
+\begin{table}[h]
+\centering
+\caption{Datasets used}
+\begin{tabular}{llrrr}
+	\hline
+	Dataset\_id&Dataset\_name&Patterns&Features&Classes\\
+	\hline
+	1&Abalone&4177&8&3\\
+	2&Car&1728&6&4\\
+	3&Chess\_krvkp&3196&36&2\\
+	4&Contrac&1473&9&3\\
+	5&Magic&19020&10&2\\
+	6&Molec\_biol\_splice&3190&60&3\\
+	7&Monks\_3&3190&6&2\\
+	8&Mushroom&8124&21&2\\
+	9&Musk\_2&6598&166&2\\
+	10&Nursery&12960&8&5\\
+	11&Optical&3823&62&10\\
+	\hline
+\label{table:datasets}
+\end{tabular}
+\end{table}
+
+\section{Evaluation Results}
+\subsection{Evaluation Ranks}
+
+\subsection{Direct Links}
+The evaluation rank values considering 
+\begin{inparaenum}[(i)]
+	\item with or without direct links,
+	\item with or without bias,
+	\item using radbas or hardlim activation function,
+\end{inparaenum}
+  is showed in Table \ref{table:directlinkresult}.
+\begin{table}[h]
+\centering
+\caption{Average Rank Values}
+\begin{tabular}{llrrrr}
+	\hline
+	Computation Method&Act Func&-bias,-link&+bias,-link&-bias,+link&+bias,+link\\
+	\hline
+	Ridge Regression&Radbas&4177&8&3\\
+	&Hardlim&6&4\\
+	Moore-Penrose Pseudoinverse&Radbas&36&2\\
+	&Hardlim&1473&9&3\\
+	\hline
+\label{table:directlinkresult}
+\end{tabular}
+\end{table}
+
+\subsection{Bias}
+\subsection{Radbas and Hardlim Activation Functions}
+\subsection{Moore-Penrose Pseudoinverse and Ridge Regression}
+\subsection{Scaling of Random Features}
+
+\end{document}
